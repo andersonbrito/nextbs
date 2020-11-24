@@ -43,7 +43,7 @@
     "region_exposure"
   ],
   "display_defaults": {
-    "color_by": "country_exposure",
+    "color_by": "division_exposure",
     "distance_measure": "div",
     "geo_resolution": "country",
     "map_triplicate": true,

@@ -1,6 +1,6 @@
 rule all:
 	input:
-		auspice = "auspice/ncov_update.json",
+		auspice = "auspice/nextbs.json",
 
 # Triggers the pre-analyses
 rule preanalyses:
@@ -254,13 +254,14 @@ rule mask:
 		"""
 
 
-
 ### Inferring bootstrap tree using IQTree
 
 rule iqtree:
 	message: "Building bootstrap tree"
 	input:
 		alignment = rules.mask.output.alignment
+	output:
+		tree = "results/masked.tree"
 	shell:
 		"""
 		iqtree \
@@ -268,6 +269,7 @@ rule iqtree:
 			-bb 1000 \
 			-nt 4 \
 			-m GTR
+		mv results/masked.fasta.treefile {output.tree}
 		"""
 
 ## Renaming taxa in bootstrap tree
@@ -275,7 +277,7 @@ rule iqtree:
 rule rename:
 	message: "Renaming taxa in bootstrap tree"
 	input:
-		tree = "results/masked.fasta.treefile",
+		tree = rules.iqtree.output.tree,
 		names = "pre-analyses/rename.tsv"
 	output:
 		new_tree = "results/tree_ren.tree"
@@ -311,11 +313,12 @@ rule refine:
 		tree = "results/tree.nwk",
 		node_data = "results/branch_lengths.json"
 	params:
-		root = "Wuhan/Hu-1/2019 Wuhan/WH01/2019",
+		root = "Netherlands/ZuidHolland_124/2020",
 		coalescent = "skyline",
 		clock_rate = 0.0008,
 		clock_std_dev = 0.0004,
 		date_inference = "marginal",
+		unit = "mutations"
 	shell:
 		"""
 		augur refine \
@@ -331,6 +334,7 @@ rule refine:
 			--clock-filter-iqd 3 \
 			--clock-rate {params.clock_rate} \
 			--clock-std-dev {params.clock_std_dev} \
+			--divergence-units {params.unit} \
 			--date-inference {params.date_inference}
 		"""
 
