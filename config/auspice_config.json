@@ -1,0 +1,65 @@
+{
+  "title": "SARS-CoV-2 phylogenetics",
+  "build_url": "https://github.com/andersonbrito/trait_clustering",
+  "maintainers": [
+    {"name": "Anderson Brito (Grubaugh Lab)",
+     "url": "https://grubaughlab.com/"}
+  ],
+  "colorings": [
+    {
+      "key": "region_exposure",
+      "title": "Region",
+      "type": "categorical"
+    },
+    {
+      "key": "country_exposure",
+      "title": "Country",
+      "type": "categorical"
+    },
+    {
+      "key": "division_exposure",
+      "title": "Division",
+      "type": "categorical"
+    },
+    {
+      "key": "location",
+      "title": "Location",
+      "type": "categorical"
+    },
+    {
+      "key": "pangolin_lineage",
+      "title": "Lineage",
+      "type": "categorical"
+    },
+    {
+      "key": "author",
+      "title": "Authors",
+      "type": "categorical"
+    }
+  ],
+  "geo_resolutions": [
+    "division_exposure",
+    "country_exposure",
+    "region_exposure"
+  ],
+  "display_defaults": {
+    "color_by": "country_exposure",
+    "distance_measure": "div",
+    "geo_resolution": "country",
+    "map_triplicate": true,
+    "branch_label": "none"
+  },
+  "filters": [
+    "division_exposure",
+    "country_exposure",
+    "region_exposure",
+    "author",
+    "originating_lab",
+    "submitting_lab"
+  ],
+  "panels": [
+    "tree",
+    "map",
+    "entropy"
+  ]
+}
