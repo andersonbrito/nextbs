@@ -73,7 +73,8 @@ rule filter_metadata:
 		"""
 	input:
 		genomes = rules.add_sequences.output.sequences,
-		metadata = files.full_metadata,
+		metadata1 = files.full_metadata,
+		metadata2 = files.metadata_lab
 	output:
 		filtered_metadata = "pre-analyses/metadata_filtered.tsv",
 		sequences = "data/sequences.fasta"
@@ -81,11 +82,11 @@ rule filter_metadata:
 		"""
 		python3 scripts/filter_metadata.py \
 			--genomes {input.genomes} \
-			--metadata {input.metadata} \
+			--metadata1 {input.metadata1} \
+			--metadata2 {input.metadata2} \
 			--output1 {output.filtered_metadata} \
 			--output2 {output.sequences}
 		"""
-
 
 rule geoscheme:
 	message:
@@ -292,23 +293,6 @@ rule rename:
 		"""
 
 
-#### Inferring Maximum Likelihood tree using the default software (IQTree)
-#
-#rule tree:
-#	message: "Building tree"
-#	input:
-#		alignment = rules.mask.output.alignment
-#	output:
-#		tree = "results/tree_raw.nwk"
-#	shell:
-#		"""
-#		augur tree \
-#			--alignment {input.alignment} \
-#			--output {output.tree}
-## 			--tree-builder-args "-te masked.fasta.treefile"
-#		"""
-
-
 ### Running TreeTime to estimate time for ancestral genomes
 
 rule refine:
@@ -321,7 +305,6 @@ rule refine:
 		"""
 	input:
 		tree = rules.rename.output.new_tree,
-# 		tree = rules.tree.output.tree,
 		alignment = rules.align.output,
 		metadata = input_metadata
 	output:
