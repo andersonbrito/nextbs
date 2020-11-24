@@ -1,6 +1,6 @@
 {
   "title": "SARS-CoV-2 phylogenetics",
-  "build_url": "https://github.com/andersonbrito/trait_clustering",
+  "build_url": "https://github.com/andersonbrito/nextbs",
   "maintainers": [
     {"name": "Anderson Brito (Grubaugh Lab)",
      "url": "https://grubaughlab.com/"}
