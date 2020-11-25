@@ -48,19 +48,19 @@ rule add_sequences:
 		"""
 	input:
 		genomes = files.original_dataset,
+		new_genomes = files.new_genomes,
 		include = files.keep,
 		exclude = files.remove
 	output:
-		sequences = "pre-analyses/temp_sequences.fasta",
-		rename = "pre-analyses/rename.tsv"
+		sequences = "pre-analyses/temp_sequences.fasta"
 	shell:
 		"""
 		python3 scripts/add_newgenomes.py \
 			--genomes {input.genomes} \
+			--new-genomes {input.new_genomes} \
 			--keep {input.include} \
 			--remove {input.exclude} \
-			--output1 {output.sequences} \
-			--output2 {output.rename}
+			--output {output.sequences} \
 		"""
 
 
@@ -77,7 +77,8 @@ rule filter_metadata:
 		metadata2 = files.metadata_lab
 	output:
 		filtered_metadata = "pre-analyses/metadata_filtered.tsv",
-		sequences = "data/sequences.fasta"
+		sequences = "data/sequences.fasta",
+		rename = "pre-analyses/rename.tsv"
 	shell:
 		"""
 		python3 scripts/filter_metadata.py \
@@ -85,7 +86,8 @@ rule filter_metadata:
 			--metadata1 {input.metadata1} \
 			--metadata2 {input.metadata2} \
 			--output1 {output.filtered_metadata} \
-			--output2 {output.sequences}
+			--output2 {output.sequences} \
+			--output3 {output.rename}
 		"""
 
 rule geoscheme:

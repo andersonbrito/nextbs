@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument("--metadata2", required=False, help="Custom lab metadata file")
     parser.add_argument("--output1", required=True, help="Filtered metadata file")
     parser.add_argument("--output2", required=True, help="Reformatted, final FASTA file")
+    parser.add_argument("--output3", required=False, help="IQTree renaming list")
     args = parser.parse_args()
 
     genomes = args.genomes
@@ -24,13 +25,14 @@ if __name__ == '__main__':
     metadata2 = args.metadata2
     output1 = args.output1
     output2 = args.output2
+    output3 = args.output3
 
-    # path = '/Users/anderson/GLab Dropbox/Anderson Brito/projects/ncov/ncov_2ndWave/nextstrain/update13_20201019/pre-analyses/'
     # genomes = path + 'temp_sequences.fasta'
     # metadata1 = path + 'metadata_nextstrain.tsv'
     # metadata2 = path + 'COVID-19_sequencing.xlsx'
     # output1 = path + 'metadata_filtered.tsv'
     # output2 = path + 'sequences.fasta'
+    # output3 = path + "rename.tsv"
 
     # create a dict of existing sequences
     sequences = {}
@@ -76,6 +78,7 @@ if __name__ == '__main__':
     dfL = dfL.rename(columns={'Sample-ID': 'id', 'Collection-date': 'date', 'Country': 'country', 'Division': 'division',
                               'State': 'code', 'Location': 'location', 'Lineage': 'pangolin_lineage', 'Source': 'originating_lab',
                               'Update': 'update'})
+
     # add inexistent columns
     for col in list_columns:
         if col not in dfL.columns:
@@ -131,7 +134,7 @@ if __name__ == '__main__':
     for idx, row in dfN.iterrows():
         strain = dfN.loc[idx, 'strain']
         if strain in sequences:
-            if strain in outputDF['strain'].to_list():
+            if strain in outputDF['strain'].to_list(): # skip metadata line if already sampled from lab metadata
                 continue
             dict_row = {}
             for col in list_columns:
@@ -159,19 +162,26 @@ if __name__ == '__main__':
 
     # write sequence file
     exported = []
-    with open(output2, 'w') as outfile2:
-        # export new metadata lines
-        for id, sequence in sequences.items():
-            if id in lab_label:
-                if lab_label[id] not in exported:
-                    entry = '>' + lab_label[id] + '\n' + sequence + '\n'
-                    outfile2.write(entry)
-                    print('* Exporting newly sequenced genome and metadata for ' + id)
-                    exported.append(lab_label[id])
-            else:
-                if id not in exported:
-                    entry = '>' + id + '\n' + sequence + '\n'
-                    outfile2.write(entry)
-                    exported.append(id)
+    # with open(output2, 'w') as outfile2:
+    outfile2 = open(output2, 'w')
+    outfile3 = open(output3, 'w')
+
+    # export new metadata lines
+    for id, sequence in sequences.items():
+        if id in lab_label:
+            if lab_label[id] not in exported:
+                entry = '>' + lab_label[id] + '\n' + sequence + '\n'
+                outfile2.write(entry)
+                print('* Exporting newly sequenced genome and metadata for ' + id)
+                new_id = lab_label[id].replace('/', '_')
+                outfile3.write(new_id + '\t' + lab_label[id] + '\n')
+                exported.append(lab_label[id])
+        else:
+            if id not in exported:
+                entry = '>' + id + '\n' + sequence + '\n'
+                outfile2.write(entry)
+                new_id = id.replace('/', '_')
+                outfile3.write(new_id + '\t' + id + '\n')
+                exported.append(id)
 
 print('\nMetadata file successfully reformatted and exported!\n')

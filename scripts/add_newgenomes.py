@@ -8,18 +8,17 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--genomes", required=True, help="FASTA file with latest genomes from GISAID")
+    parser.add_argument("--new-genomes", required=True, help="FASTA file with newly sequenced genomes")
     parser.add_argument("--keep", required=True, help="TXT file with accession number of genomes to be included")
     parser.add_argument("--remove", required=True, help="TXT file with accession number of genomes to be removed")
-    parser.add_argument("--output1", required=True, help="FASTA file containing filtered sequences")
-    parser.add_argument("--output2", required=True, help="Renaming file")
-
+    parser.add_argument("--output", required=True, help="FASTA file containing filtered sequences")
     args = parser.parse_args()
 
     genomes = args.genomes
+    new_genomes = args.new_genomes
     keep = args.keep
     remove = args.remove
-    outfile1 = args.output1
-    outfile2 = args.output2
+    outfile = args.output
 
 
     # genomes = path + "gisaid_hcov-19.fasta"
@@ -27,17 +26,28 @@ if __name__ == '__main__':
     # keep = path + 'keep.txt'
     # remove = path + "remove.txt"
     # outfile = path + "temp_sequences.fasta"
-
+    # # outfile2 = path + "rename.tsv"
 
 
     # create a list of the existing sequences
+    print('\n### Processing existing genomes...\n')
     all_sequences = {}
     for fasta in SeqIO.parse(open(genomes),'fasta'):
         id, seq = fasta.description, fasta.seq
         id = id.replace('hCoV-19/', '').split('|')[0].replace(' ', '')
-        all_sequences[id] = str(seq)
+        if id not in all_sequences: # avoid potential duplicates
+            all_sequences[id] = str(seq)
+
+    # store only new sequences in a dictionary, ignoring existing ones
+    print('### Processing newly sequenced genomes...\n')
+    newly_sequenced = {}
+    for fasta in SeqIO.parse(open(new_genomes),'fasta'):
+        id, seq = fasta.description, fasta.seq
+        if id not in newly_sequenced.keys(): # avoid potential duplicates
+            newly_sequenced[id] = str(seq)
 
     # create a list of sequences to be added in all instances
+    print('### Searching for pre-selected genomes to be added...\n')
     keep_sequences = {}
     mismatch = []
     for id in sorted(open(keep, "r").readlines()):
@@ -50,6 +60,7 @@ if __name__ == '__main__':
                     mismatch.append(id)
 
     # create a list of sequences to be ignored in all instances
+    print('### Creating list of genomes to be ignored...\n')
     remove_sequences = []
     for id in open(remove, "r").readlines():
         if id[0] not in ["#", "\n"]:
@@ -59,23 +70,21 @@ if __name__ == '__main__':
 
     # export only sequences to be used in the nextstrain build
     c = 1
-    sequences = {**keep_sequences}
-    print('\n### Exporting sequences\n')
+    sequences = {**keep_sequences, **newly_sequenced}
+    print('### Exporting sequences\n')
     exported = []
-    output1 = open(outfile1, 'w')
-    output2 = open(outfile2, 'w')
+    removed = []
+    output = open(outfile, 'w')
     for id in sequences.keys():
         if id not in remove_sequences: # filter out unwanted sequences
             entry = ">" + id + "\n" + sequences[id].upper() + "\n"
             exported.append(id)
-            output1.write(entry)
-            new_id = id.replace('/', '_')
-            output2.write(new_id + '\t' + id + '\n')
+            output.write(entry)
             print(str(c) + '. ' + id)
         else:
+            removed.append(id)
             c -= 1
         c += 1
-
 
 
     # mismatched sequence headers
@@ -89,11 +98,12 @@ if __name__ == '__main__':
 
 
     # excluding sequences
-    print('\n### Excluding sequences ###\n')
-    e = 1
-    for id in remove_sequences:
-        print(str(e) + '. ' + id)
-        e += 1
+    if len(removed) > 0:
+        print('\n### Excluding sequences ###\n')
+        e = 1
+        for id in removed:
+            print(str(e) + '. ' + id)
+            e += 1
 
     print('\n### Final result\n')
 
@@ -101,5 +111,6 @@ if __name__ == '__main__':
 
     print(str(len(mismatch)) + ' genomes in keep.txt were NOT FOUND on GISAID database')
     print(str(len(keep_sequences)) + ' genomes ADDED from GISAID dataset')
-    print(str(len(remove_sequences)) + ' genomes were REMOVED according to remove.txt\n')
+    print(str(len(newly_sequenced)) + ' newly sequenced genomes were added')
+    print(str(len(removed)) + ' genomes were REMOVED according to remove.txt\n')
     print(str(len(exported)) + ' genomes included in FINAL dataset\n')
