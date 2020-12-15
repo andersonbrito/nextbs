@@ -38,9 +38,10 @@
     }
   ],
   "geo_resolutions": [
-    "division_exposure",
+    "region_exposure",
     "country_exposure",
-    "region_exposure"
+    "division_exposure",
+    "location"
   ],
   "display_defaults": {
     "color_by": "division_exposure",
@@ -50,9 +51,10 @@
     "branch_label": "none"
   },
   "filters": [
-    "division_exposure",
-    "country_exposure",
     "region_exposure",
+    "country_exposure",
+    "division_exposure",
+    "location",
     "author",
     "originating_lab",
     "submitting_lab"

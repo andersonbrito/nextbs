@@ -315,7 +315,7 @@ rule refine:
 		tree = "results/tree.nwk",
 		node_data = "results/branch_lengths.json"
 	params:
-		root = "Netherlands/ZuidHolland_124/2020",
+		root = "Wuhan/Hu-1/2019 Wuhan/WH01/2019",
 		coalescent = "skyline",
 		clock_rate = 0.0008,
 		clock_std_dev = 0.0004,
