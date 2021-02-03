@@ -35,9 +35,7 @@ rule files:
 		aligned = "config/aligned.fasta"
 
 
-
 files = rules.files.params
-
 
 rule add_sequences:
 	message:
@@ -78,7 +76,7 @@ rule filter_metadata:
 	output:
 		filtered_metadata = "pre-analyses/metadata_filtered.tsv",
 		sequences = "data/sequences.fasta",
-		rename = "pre-analyses/rename.tsv"
+		rename = "config/rename.tsv"
 	shell:
 		"""
 		python3 scripts/filter_metadata.py \
@@ -205,7 +203,7 @@ rule align:
 	message:
 		"""
 		Aligning sequences to {input.reference}
-		  - filling gaps with N
+		    - gaps relative to reference are considered real
 		"""
 	input:
 		sequences = rules.filter.output.sequences,
@@ -221,10 +219,9 @@ rule align:
 			--existing-alignment {files.aligned} \
 			--sequences {input.sequences} \
 			--reference-sequence {input.reference} \
-			--output {output.alignment} \
 			--nthreads {params.threads} \
-			--remove-reference \
-			--fill-gaps \
+			--output {output.alignment} \
+			--remove-reference
 		"""
 
 
@@ -280,7 +277,7 @@ rule rename:
 	message: "Renaming taxa in bootstrap tree"
 	input:
 		tree = rules.iqtree.output.tree,
-		names = "pre-analyses/rename.tsv"
+		names = "config/rename.tsv"
 	output:
 		new_tree = "results/tree_ren.tree"
 	params:
@@ -333,7 +330,7 @@ rule refine:
 			--timetree \
 			--coalescent {params.coalescent} \
 			--date-confidence \
-			--clock-filter-iqd 3 \
+			--clock-filter-iqd 4 \
 			--clock-rate {params.clock_rate} \
 			--clock-std-dev {params.clock_std_dev} \
 			--divergence-units {params.unit} \
@@ -391,7 +388,7 @@ rule traits:
 	output:
 		node_data = "results/traits.json",
 	params:
-		columns = "region_exposure country_exposure division_exposure location"
+		columns = "region_exposure"
 	shell:
 		"""
 		augur traits \
