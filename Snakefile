@@ -259,6 +259,8 @@ rule iqtree:
 	message: "Building bootstrap tree"
 	input:
 		alignment = rules.mask.output.alignment
+	params:
+		threads = options.threads
 	output:
 		tree = "results/masked.tree"
 	shell:
@@ -266,7 +268,7 @@ rule iqtree:
 		iqtree \
 			-s {input.alignment} \
 			-bb 1000 \
-			-nt 4 \
+			-nt {params.threads} \
 			-m GTR
 		mv results/masked.fasta.treefile {output.tree}
 		"""
